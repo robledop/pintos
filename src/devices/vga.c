@@ -70,6 +70,8 @@ vga_putc (int c)
     case '\b':
       if (cx > 0)
         cx--;
+      fb[cy][cx][0] = 0;
+      fb[cy][cx][1] = GRAY_ON_BLACK;
       break;
       
     case '\r':
@@ -101,7 +103,7 @@ vga_putc (int c)
 
   intr_set_level (old_level);
 }
-
+
 /** Clears the screen and moves the cursor to the upper left. */
 static void
 cls (void)

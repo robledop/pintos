@@ -76,9 +76,11 @@ SOURCES = $(foreach dir,$(KERNEL_SUBDIRS),$($(dir)_SRC))
 OBJECTS = $(patsubst %.c,%.o,$(patsubst %.S,%.o,$(SOURCES)))
 DEPENDS = $(patsubst %.o,%.d,$(OBJECTS))
 
-GDBPORT := $(shell expr `id -u` % 5000 + 25000)
+#GDBPORT := $(shell expr `id -u` % 5000 + 25000)
+GDBPORT := 1234
 IMAGE = kernel.img
-QEMUOPTS = -serial mon:stdio -gdb tcp::$(GDBPORT)
+#QEMUOPTS = -serial mon:stdio -gdb tcp::$(GDBPORT)
+QEMUOPTS = -gdb tcp::$(GDBPORT) -daemonize -serial file:serial.log
 QEMUOPTS += $(shell if $(QEMU) -nographic -help | grep -q '^-D '; then echo '-D qemu.log'; fi)
 
 %.o: %.c

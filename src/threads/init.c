@@ -38,6 +38,7 @@
 #include "filesys/fsutil.h"
 #endif
 
+uint8_t getc_blocking();
 /** Page directory with kernel mappings only. */
 uint32_t *init_page_dir;
 
@@ -133,14 +134,56 @@ pintos_init (void)
     /* Run actions specified on kernel command line. */
     run_actions (argv);
   } else {
-    // TODO: no command line passed to kernel. Run interactively 
+    // TODO: no command line passed to kernel. Run interactively
+    while (true) {
+      char buffer[1024] = {0};
+      printf("\nPINTOS> ");
+      int i = 0;
+      for (; i < sizeof(buffer) - 1; i++) {
+          uint8_t c = getc_blocking();
+          if (c == '\n' || c == '\r') {
+              break;
+          }
+
+          if (c == '\b' && i <= 0) {
+              i = -1;
+              continue;
+          }
+
+         if (c == '\b' && i > 0) {
+            i -= 2;
+          }
+
+          buffer[i] = c;
+          putchar(c);
+      }
+
+      buffer[i] = '\0';
+
+      if(strcmp(buffer, "whoami") == 0) {
+        printf("\nroot");
+      } else if(strcmp(buffer, "exit") == 0) {
+        printf("\nGoodbye");
+        break;
+      } else {
+        printf("\ninvalid command");
+      }
+    }
   }
 
   /* Finish up. */
   shutdown ();
   thread_exit ();
 }
-
+
+uint8_t getc_blocking() {
+  uint8_t c = input_getc();
+  while(c == 0) {
+    c = input_getc();
+  }
+  return c;
+}
+
 /** Clear the "BSS", a segment that should be initialized to
    zeros.  It isn't actually stored on disk or zeroed by the
    kernel loader, so we have to zero it ourselves.
